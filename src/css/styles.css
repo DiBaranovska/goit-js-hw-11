@@ -1,0 +1,58 @@
+* {
+  box-sizing: border-box;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0px;
+}
+
+body {
+  margin: 0;
+  position: relative;
+  display: flex;
+}
+
+header {
+  background-color: rgb(44, 44, 156);
+  position: fixed;
+  width: 100%;
+  text-align: center;
+}
+
+.search-for {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.search-for__input {
+  height: 25px;
+  width: 250px;
+  border-radius: 5px;
+  margin-right: 0;
+  border: none;
+}
+
+.search-for__btn {
+  height: 25px;
+  width: 30px;
+  margin-left: -34px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border: none;
+  padding: 0;
+}
+
+.search-for__btn:hover {
+  cursor: pointer;
+}
+
+.gallery-list {
+  margin-top: 70px;
+}
