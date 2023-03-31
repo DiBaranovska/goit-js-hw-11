@@ -23,26 +23,31 @@ header {
   background-color: rgb(44, 44, 156);
   position: fixed;
   width: 100%;
-  text-align: center;
+  height: 85px;
 }
 
 .search-for {
-  padding-top: 15px;
-  padding-bottom: 15px;
+display: flex;
+justify-content: center;
+align-items: center;
+margin-top: 30px;
 }
 
 .search-for__input {
   height: 25px;
   width: 250px;
-  border-radius: 5px;
-  margin-right: 0;
+  border-radius: 5px 0 0 5px;
+
   border: none;
+}
+
+.search-for__input:focus-visible {
+outline: 0;
 }
 
 .search-for__btn {
   height: 25px;
   width: 30px;
-  margin-left: -34px;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
   border: none;
