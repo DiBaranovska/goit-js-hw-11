@@ -14,25 +14,34 @@ const galleryListMarkup = data => {
       element => `
       <div class="photo-card">
        <a class="photo-card-link" href="${element.largeImageURL}">
-        <img src="${element.webformatURL}" alt="${element.tags}" loading="lazy" /></a>
+        <img class="gallery__image" src="${element.webformatURL}" alt="${element.tags}" loading="lazy" /></a>
       <div class="info">
         <p class="info-item">
           <b>Likes</b>
+          ${element.likes}
         </p>
         <p class="info-item">
           <b>Views</b>
+          ${element.views}
         </p>
         <p class="info-item">
           <b>Comments</b>
+          ${element.comments}
         </p>
         <p class="info-item">
           <b>Downloads</b>
+          ${element.downloads}
         </p>
       </div>
-</div>`
+    </div>`
     )
     .join(' ');
 };
+
+var lightbox = new SimpleLightbox('.gallery a', {
+  sourceAttr: 'href',
+  captionDelay: 250,
+});
 
 const onFormSubmit = async event => {
   event.preventDefault();
@@ -54,6 +63,7 @@ const onFormSubmit = async event => {
 
     const queryResult = data.hits;
     listEl.innerHTML = galleryListMarkup(queryResult);
+    var gallery = $('.gallery a').simpleLightbox();
   } catch (err) {
     console.log(err);
   }
