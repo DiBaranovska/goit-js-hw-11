@@ -63,7 +63,6 @@ const onFormSubmit = async event => {
 
     const queryResult = data.hits;
     listEl.innerHTML = galleryListMarkup(queryResult);
-    var gallery = $('.gallery a').simpleLightbox();
   } catch (err) {
     console.log(err);
   }
