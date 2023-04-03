@@ -110,8 +110,8 @@ window.addEventListener(
       top: cardHeight * 2,
       behavior: 'smooth',
     });
-    if (documentPosition.bottom < document.documentElement.clientHeight + 150) {
+    if (documentPosition.bottom < document.documentElement.clientHeight + 50) {
       onLoadMoreBtnClick();
     }
-  }, 400)
+  }, 350)
 );
