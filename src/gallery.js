@@ -71,7 +71,7 @@ const onFormSubmit = async event => {
       listEl.innerHTML = galleryListMarkup(queryResult);
       Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
     }
-    lightbox.refresh();
+    await lightbox.refresh();
   } catch (err) {
     console.log(err);
   }
@@ -92,6 +92,7 @@ const onLoadMoreBtnClick = async () => {
     }
     listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
     Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+    await lightbox.refresh();
   } catch (err) {
     console.log(err);
   };
