@@ -61,7 +61,9 @@ const onFormSubmit = async event => {
       listEl.innerHTML = '';
       return;
     } else if (listEl.textContent !== '') {
-      listEl.innerHTML = '';
+      page = 1;
+      listEl.innerHTML = galleryListMarkup(queryResult);
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
     } else if (getImagesApi.per_page >= data.totalHits) {
       listEl.innerHTML = galleryListMarkup(queryResult);
       Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
@@ -81,20 +83,18 @@ const onLoadMoreBtnClick = async () => {
     const { data } = await getImagesApi.getImages();
     const queryResult = data.hits;
 
-    if (getImagesApi.page === data.totalHits) {
-    } else if (getImagesApi.page * getImagesApi.per_page >= data.totalHits) {
+    if (getImagesApi.page * getImagesApi.per_page >= data.totalHits) {
       listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
       Notiflix.Notify.warning(
         "We're sorry, but you've reached the end of search results."
       );
-    } else {
-      listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
-      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
     }
+    listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
+    Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
   } catch (err) {
     console.log(err);
-  }
-};
+  };
+}
 
 formEl.addEventListener('submit', onFormSubmit);
 
