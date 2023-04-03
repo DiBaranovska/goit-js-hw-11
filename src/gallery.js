@@ -3,18 +3,24 @@ import Notiflix from 'notiflix';
 import { GetImagesAPI } from './index';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import trottle from 'lodash.throttle';
 
 const formEl = document.querySelector('form');
 const listEl = document.querySelector('.gallery');
 const getImagesApi = new GetImagesAPI();
 
+var lightbox = new SimpleLightbox('.gallery a', {
+  sourceAttr: 'href',
+  close: true,
+});
+
 const galleryListMarkup = data => {
   return data
     .map(
       element => `
-      <div class="photo-card">
-       <a class="photo-card-link" href="${element.largeImageURL}">
-        <img class="gallery__image" src="${element.webformatURL}" alt="${element.tags}" loading="lazy" /></a>
+      <a class="photo-card-link" href="${element.largeImageURL}">
+            <div class="photo-card">
+        <img class="gallery__image" src="${element.webformatURL}" alt="${element.tags}" loading="lazy"/>
       <div class="info">
         <p class="info-item">
           <b>Likes</b>
@@ -33,15 +39,10 @@ const galleryListMarkup = data => {
           ${element.downloads}
         </p>
       </div>
-    </div>`
+    </div></a>`
     )
     .join(' ');
 };
-
-var lightbox = new SimpleLightbox('.gallery a', {
-  sourceAttr: 'href',
-  captionDelay: 250,
-});
 
 const onFormSubmit = async event => {
   event.preventDefault();
@@ -51,7 +52,7 @@ const onFormSubmit = async event => {
 
   try {
     const { data } = await getImagesApi.getImages();
-
+    const queryResult = data.hits;
     if (!data.totalHits) {
       listEl.innerHTML = '';
       Notiflix.Notify.failure(
@@ -59,13 +60,56 @@ const onFormSubmit = async event => {
       );
       listEl.innerHTML = '';
       return;
+    } else if (listEl.textContent !== '') {
+      listEl.innerHTML = '';
+    } else if (getImagesApi.per_page >= data.totalHits) {
+      listEl.innerHTML = galleryListMarkup(queryResult);
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+    } else {
+      listEl.innerHTML = galleryListMarkup(queryResult);
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
     }
+  } catch (err) {
+    console.log(err);
+  }
+};
 
+const onLoadMoreBtnClick = async () => {
+  getImagesApi.page += 1;
+
+  try {
+    const { data } = await getImagesApi.getImages();
     const queryResult = data.hits;
-    listEl.innerHTML = galleryListMarkup(queryResult);
+
+    if (getImagesApi.page === data.totalHits) {
+    } else if (getImagesApi.page * getImagesApi.per_page >= data.totalHits) {
+      listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
+      Notiflix.Notify.warning(
+        "We're sorry, but you've reached the end of search results."
+      );
+    } else {
+      listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+    }
   } catch (err) {
     console.log(err);
   }
 };
 
 formEl.addEventListener('submit', onFormSubmit);
+
+window.addEventListener(
+  'scroll',
+  trottle(() => {
+    const documentPosition = document.documentElement.getBoundingClientRect();
+    const { height: cardHeight } =
+      listEl.firstElementChild.getBoundingClientRect();
+    window.scrollBy({
+      top: cardHeight * 2,
+      behavior: 'smooth',
+    });
+    if (documentPosition.bottom < document.documentElement.clientHeight + 150) {
+      onLoadMoreBtnClick();
+    }
+  }, 400)
+);
