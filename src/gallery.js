@@ -9,7 +9,7 @@ const formEl = document.querySelector('form');
 const listEl = document.querySelector('.gallery');
 const getImagesApi = new GetImagesAPI();
 
-var lightbox = new SimpleLightbox('.gallery a', {
+let lightbox = new SimpleLightbox('.gallery a', {
   sourceAttr: 'href',
   close: true,
 });
@@ -71,6 +71,7 @@ const onFormSubmit = async event => {
       listEl.innerHTML = galleryListMarkup(queryResult);
       Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
     }
+    lightbox.refresh();
   } catch (err) {
     console.log(err);
   }
