@@ -78,9 +78,8 @@ const onFormSubmit = async event => {
   };
 };
 
-const onLoadMoreBtnClick = async (event) => {
+const onLoadMoreScroll = async (event) => {
   getImagesApi.page += 1;
-  console.log(totalDownloadImages);
   if (totalDownloadImages <= totalImages) {
     try {
       const { data } = await getImagesApi.getImages();
@@ -101,17 +100,10 @@ const onLoadMoreBtnClick = async (event) => {
 formEl.addEventListener('submit', onFormSubmit);
 
 window.addEventListener(
-  'scroll',
-  trottle(() => {
+  'scroll', trottle(() => {
     const documentPosition = document.documentElement.getBoundingClientRect();
-    /*const { height: cardHeight } =
-      listEl.firstElementChild.getBoundingClientRect();
-    window.scrollBy({
-      top: cardHeight * 2,
-      behavior: 'smooth',
-    });*/
     if (documentPosition.bottom < document.documentElement.clientHeight + 50) {
-      onLoadMoreBtnClick();
+      onLoadMoreScroll();
     }
   }, 350)
 );
