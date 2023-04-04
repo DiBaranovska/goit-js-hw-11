@@ -48,13 +48,13 @@ const galleryListMarkup = data => {
 
 const onFormSubmit = async event => {
   event.preventDefault();
+  window.scrollTo(0, 0);
   getImagesApi.page = 1;
   const searchQuery = event.currentTarget.elements['searchQuery'].value.trim();
   getImagesApi.query = searchQuery;
   totalDownloadImages = null;
   totalImages = null;
-
-  if (searchQuery !== "") {
+  if (searchQuery !== '') {
     try {
       const { data } = await getImagesApi.getImages();
       const queryResult = data.hits;
@@ -75,13 +75,13 @@ const onFormSubmit = async event => {
     } catch (err) {
       console.log(err);
     }
-  };
+  }
 };
 
-const onLoadMoreScroll = async (event) => {
-  getImagesApi.page += 1;
-  if (totalDownloadImages <= totalImages) {
+const onLoadMoreScroll = async event => {
+  if (totalDownloadImages < totalImages) {
     try {
+      getImagesApi.page += 1;
       const { data } = await getImagesApi.getImages();
       const queryResult = data.hits;
       totalDownloadImages += queryResult.length;
@@ -89,18 +89,22 @@ const onLoadMoreScroll = async (event) => {
       await lightbox.refresh();
     } catch (err) {
       console.log(err);
-    };
+    }
     return;
-  } {
-    Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.")
+  }
+  {
+    Notiflix.Notify.warning(
+      "We're sorry, but you've reached the end of search results."
+    );
     return;
-  };
+  }
 };
 
 formEl.addEventListener('submit', onFormSubmit);
 
 window.addEventListener(
-  'scroll', trottle(() => {
+  'scroll',
+  trottle(() => {
     const documentPosition = document.documentElement.getBoundingClientRect();
     if (documentPosition.bottom < document.documentElement.clientHeight + 50) {
       onLoadMoreScroll();
