@@ -59,7 +59,7 @@ const onFormSubmit = async event => {
       const { data } = await getImagesApi.getImages();
       const queryResult = data.hits;
       totalDownloadImages = queryResult.length;
-      totalImages = data.total;
+      totalImages = data.totalHits;
       if (!data.totalHits) {
         listEl.innerHTML = '';
         Notiflix.Notify.failure(
@@ -81,7 +81,7 @@ const onFormSubmit = async event => {
 const onLoadMoreBtnClick = async (event) => {
   getImagesApi.page += 1;
   console.log(totalDownloadImages);
-  if (totalDownloadImages < totalImages) {
+  if (totalDownloadImages <= totalImages) {
     try {
       const { data } = await getImagesApi.getImages();
       const queryResult = data.hits;
@@ -104,12 +104,12 @@ window.addEventListener(
   'scroll',
   trottle(() => {
     const documentPosition = document.documentElement.getBoundingClientRect();
-    const { height: cardHeight } =
+    /*const { height: cardHeight } =
       listEl.firstElementChild.getBoundingClientRect();
     window.scrollBy({
       top: cardHeight * 2,
       behavior: 'smooth',
-    });
+    });*/
     if (documentPosition.bottom < document.documentElement.clientHeight + 50) {
       onLoadMoreBtnClick();
     }
