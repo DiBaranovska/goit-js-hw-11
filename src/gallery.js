@@ -8,6 +8,8 @@ import trottle from 'lodash.throttle';
 const formEl = document.querySelector('form');
 const listEl = document.querySelector('.gallery');
 const getImagesApi = new GetImagesAPI();
+let totalDownloadImages = null;
+let totalImages = null;
 
 let lightbox = new SimpleLightbox('.gallery a', {
   sourceAttr: 'href',
@@ -46,57 +48,55 @@ const galleryListMarkup = data => {
 
 const onFormSubmit = async event => {
   event.preventDefault();
-
-  const searchQuery = event.currentTarget.elements['searchQuery'].value;
+  getImagesApi.page = 1;
+  const searchQuery = event.currentTarget.elements['searchQuery'].value.trim();
   getImagesApi.query = searchQuery;
+  totalDownloadImages = null;
+  totalImages = null;
 
-  try {
-    const { data } = await getImagesApi.getImages();
-    const queryResult = data.hits;
-    if (!data.totalHits) {
-      listEl.innerHTML = '';
-      Notiflix.Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-      listEl.innerHTML = '';
-      return;
-    } else if (listEl.textContent !== '') {
-      page = 1;
-      listEl.innerHTML = galleryListMarkup(queryResult);
-      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-    } else if (getImagesApi.per_page >= data.totalHits) {
-      listEl.innerHTML = galleryListMarkup(queryResult);
-      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-    } else {
-      listEl.innerHTML = galleryListMarkup(queryResult);
-      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+  if (searchQuery !== "") {
+    try {
+      const { data } = await getImagesApi.getImages();
+      const queryResult = data.hits;
+      totalDownloadImages = queryResult.length;
+      totalImages = data.total;
+      if (!data.totalHits) {
+        listEl.innerHTML = '';
+        Notiflix.Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+        listEl.innerHTML = '';
+        return;
+      } else {
+        listEl.innerHTML = galleryListMarkup(queryResult);
+        Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+      }
+      await lightbox.refresh();
+    } catch (err) {
+      console.log(err);
     }
-    await lightbox.refresh();
-  } catch (err) {
-    console.log(err);
-  }
+  };
 };
 
-const onLoadMoreBtnClick = async () => {
+const onLoadMoreBtnClick = async (event) => {
   getImagesApi.page += 1;
-
-  try {
-    const { data } = await getImagesApi.getImages();
-    const queryResult = data.hits;
-
-    if (getImagesApi.page * getImagesApi.per_page >= data.totalHits) {
+  console.log(totalDownloadImages);
+  if (totalDownloadImages < totalImages) {
+    try {
+      const { data } = await getImagesApi.getImages();
+      const queryResult = data.hits;
+      totalDownloadImages += queryResult.length;
       listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
-      Notiflix.Notify.warning(
-        "We're sorry, but you've reached the end of search results."
-      );
-    }
-    listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
-    Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-    await lightbox.refresh();
-  } catch (err) {
-    console.log(err);
+      await lightbox.refresh();
+    } catch (err) {
+      console.log(err);
+    };
+    return;
+  } {
+    Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.")
+    return;
   };
-}
+};
 
 formEl.addEventListener('submit', onFormSubmit);
 
