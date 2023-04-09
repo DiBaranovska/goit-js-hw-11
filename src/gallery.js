@@ -4,6 +4,7 @@ import { GetImagesAPI } from './index';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import trottle from 'lodash.throttle';
+import './io';
 
 const formEl = document.querySelector('form');
 const listEl = document.querySelector('.gallery');
@@ -78,7 +79,7 @@ const onFormSubmit = async event => {
   }
 };
 
-const onLoadMoreScroll = async event => {
+/*const onLoadMoreScroll = async event => {
   if (totalDownloadImages < totalImages) {
     try {
       getImagesApi.page += 1;
@@ -98,11 +99,11 @@ const onLoadMoreScroll = async event => {
     );
     return;
   }
-};
+};*/
 
 formEl.addEventListener('submit', onFormSubmit);
 
-window.addEventListener(
+/*window.addEventListener(
   'scroll',
   trottle(() => {
     const documentPosition = document.documentElement.getBoundingClientRect();
@@ -110,4 +111,4 @@ window.addEventListener(
       onLoadMoreScroll();
     }
   }, 350)
-);
+);*/
