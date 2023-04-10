@@ -3,14 +3,12 @@ import Notiflix from 'notiflix';
 import { GetImagesAPI } from './index';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import trottle from 'lodash.throttle';
-import './io';
 
 const formEl = document.querySelector('form');
 const listEl = document.querySelector('.gallery');
+const loadEl = document.querySelector('.setinal');
 const getImagesApi = new GetImagesAPI();
-let totalDownloadImages = null;
-let totalImages = null;
+let searchQuery = "";
 
 let lightbox = new SimpleLightbox('.gallery a', {
   sourceAttr: 'href',
@@ -51,16 +49,13 @@ const onFormSubmit = async event => {
   event.preventDefault();
   window.scrollTo(0, 0);
   getImagesApi.page = 1;
-  const searchQuery = event.currentTarget.elements['searchQuery'].value.trim();
+  getImagesApi.per_page = 40;
+  searchQuery = event.currentTarget.elements['searchQuery'].value.trim();
   getImagesApi.query = searchQuery;
-  totalDownloadImages = null;
-  totalImages = null;
   if (searchQuery !== '') {
     try {
       const { data } = await getImagesApi.getImages();
       const queryResult = data.hits;
-      totalDownloadImages = queryResult.length;
-      totalImages = data.totalHits;
       if (!data.totalHits) {
         listEl.innerHTML = '';
         Notiflix.Notify.failure(
@@ -76,39 +71,52 @@ const onFormSubmit = async event => {
     } catch (err) {
       console.log(err);
     }
-  }
+    return;
+  } {listEl.innerHTML = '';}
 };
 
-/*const onLoadMoreScroll = async event => {
-  if (totalDownloadImages < totalImages) {
-    try {
-      getImagesApi.page += 1;
-      const { data } = await getImagesApi.getImages();
-      const queryResult = data.hits;
-      totalDownloadImages += queryResult.length;
-      listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
-      await lightbox.refresh();
-    } catch (err) {
-      console.log(err);
-    }
-    return;
-  }
-  {
-    Notiflix.Notify.warning(
-      "We're sorry, but you've reached the end of search results."
-    );
-    return;
-  }
-};*/
+
 
 formEl.addEventListener('submit', onFormSubmit);
 
-/*window.addEventListener(
-  'scroll',
-  trottle(() => {
-    const documentPosition = document.documentElement.getBoundingClientRect();
-    if (documentPosition.bottom < document.documentElement.clientHeight + 50) {
-      onLoadMoreScroll();
+
+const onLoad = async event => {
+  try {
+    getImagesApi.page += 1;
+    const { data } = await getImagesApi.getImages();
+    const queryResult = data.hits;
+    if (getImagesApi.page * getImagesApi.per_page >= data.totalHits) { 
+      console.log(data.page * data.hits.length);
+      console.log(data.totalHits);
+      listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
+      Notiflix.Notify.warning(
+        "We're sorry, but you've reached the end of search results.");
+      observer.disconnect(loadEl); 
+      return;
+    } else {
+      console.log(getImagesApi.page * getImagesApi.per_page)
+      listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
     }
-  }, 350)
-);*/
+    await lightbox.refresh();
+  } catch (err) {
+    console.log(err);
+  }
+  return;
+}
+
+const onEntry = entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && searchQuery !== "") {
+      onLoad();
+    }
+  });
+};
+
+const options = {
+  rootMargin: "100px",
+};
+
+
+const observer = new IntersectionObserver(onEntry, options)
+
+observer.observe(loadEl);
