@@ -47,12 +47,14 @@ const galleryListMarkup = data => {
 
 const onFormSubmit = async event => {
   event.preventDefault();
-  window.scrollTo(0, 0);
-  getImagesApi.page = 1;
-  getImagesApi.per_page = 40;
+  
   searchQuery = event.currentTarget.elements['searchQuery'].value.trim();
   getImagesApi.query = searchQuery;
   if (searchQuery !== '') {
+    observer.observe(loadEl);
+  window.scrollTo(0, 0);
+  getImagesApi.page = 1;
+  getImagesApi.per_page = 40;
     try {
       const { data } = await getImagesApi.getImages();
       const queryResult = data.hits;
@@ -63,7 +65,14 @@ const onFormSubmit = async event => {
         );
         listEl.innerHTML = '';
         return;
-      } else {
+      } else if (getImagesApi.page * getImagesApi.per_page >= data.totalHits) { 
+        listEl.innerHTML = galleryListMarkup(queryResult);
+        Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+        Notiflix.Notify.warning(
+          "We're sorry, but you've reached the end of search results.");
+        observer.disconnect(loadEl); 
+      }
+      else {
         listEl.innerHTML = galleryListMarkup(queryResult);
         Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
       }
@@ -91,10 +100,10 @@ const onLoad = async event => {
       listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
       Notiflix.Notify.warning(
         "We're sorry, but you've reached the end of search results.");
+      
       observer.disconnect(loadEl); 
       return;
     } else {
-      console.log(getImagesApi.page * getImagesApi.per_page)
       listEl.insertAdjacentHTML('beforeend', galleryListMarkup(queryResult));
     }
     await lightbox.refresh();
