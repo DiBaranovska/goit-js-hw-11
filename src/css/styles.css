@@ -94,6 +94,8 @@ header {
   width: 100%;
   object-fit: cover;
   transition: transform var(--animation-duration) var(--timing-function);
+  min-height: 214px;
+  background-size: contain;
 }
 
 .photo-card-link:hover {
